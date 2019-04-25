@@ -1,6 +1,6 @@
 package com.vaadin.guice.annotation;
 
-import com.google.inject.*;
+import com.google.inject.Module;
 import static java.lang.annotation.ElementType.*;
 import static java.lang.annotation.RetentionPolicy.*;
 

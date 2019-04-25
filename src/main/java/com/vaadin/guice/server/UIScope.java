@@ -38,34 +38,51 @@ class UIScope implements Scope, Serializable, SessionDestroyListener {
 
     @SuppressWarnings("WeakerAccess")
     public UIScope(){
-        scopesBySession = synchronizedMap(new HashMap<>());
+        scopesBySession = synchronizedMap(new WeakHashMap<>());
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public <T> Provider<T> scope(Key<T> key, Provider<T> provider) {
         return () -> {
-
             final VaadinSession vaadinSession = checkNotNull(
                 VaadinSession.getCurrent(),
                 "VaadinSession is not set up yet."
             );
 
-            vaadinSession.lock();
+            Map<UI, Map<Key<?>, Object>> uiToScopeMap;
 
-            try {
-                final UI currentUI = checkNotNull(
-                    UI.getCurrent(),
-                    "current UI is not set up yet"
-                );
+            synchronized (vaadinSession) {
+                uiToScopeMap = scopesBySession.get(vaadinSession);
 
-                return (T) scopesBySession
-                    .computeIfAbsent(vaadinSession, session -> new HashMap<>())
-                    .computeIfAbsent(currentUI, ui -> new WeakHashMap<>())
-                    .computeIfAbsent(key, k -> provider.get());
-            } finally {
-                vaadinSession.unlock();
-            }
+                if(uiToScopeMap == null){
+                    uiToScopeMap = new WeakHashMap<>();
+                    scopesBySession.put(vaadinSession, uiToScopeMap);
+                }
+           }
+
+            final UI currentUI = checkNotNull(
+                UI.getCurrent(),
+                "current UI is not set up yet"
+            );
+
+            synchronized (currentUI){
+                Map<Key<?>, Object> scopeMap = uiToScopeMap.get(currentUI);
+
+                if(scopeMap == null){
+                    scopeMap = new HashMap<>();
+                    uiToScopeMap.put(currentUI, scopeMap);
+                }
+
+                T result = (T)scopeMap.get(key);
+
+                if(result == null){
+                    result = provider.get();
+                    scopeMap.put(key, result);
+              }
+
+                return result;
+              }
         };
     }
 

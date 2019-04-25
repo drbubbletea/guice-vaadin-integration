@@ -27,6 +27,7 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.WeakHashMap;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -36,7 +37,7 @@ class VaadinSessionScope implements Scope, Serializable, SessionDestroyListener 
 
     @SuppressWarnings("WeakerAccess")
     public VaadinSessionScope(){
-        scopeMapsBySession = Collections.synchronizedMap(new HashMap<>());
+        scopeMapsBySession = Collections.synchronizedMap(new WeakHashMap<>());
     }
 
     @Override
@@ -45,14 +46,22 @@ class VaadinSessionScope implements Scope, Serializable, SessionDestroyListener 
         return () -> {
             final VaadinSession vaadinSession = checkNotNull(VaadinSession.getCurrent());
 
-            vaadinSession.lock();
+            synchronized (vaadinSession){
+                Map<Key<?>, Object> scopeMap = scopeMapsBySession.get(vaadinSession);
 
-            try {
-                return (T) scopeMapsBySession
-                    .computeIfAbsent(vaadinSession, v -> new HashMap<>())
-                    .computeIfAbsent(key, k -> provider.get());
-            } finally {
-                vaadinSession.unlock();
+                if (scopeMap == null) {
+                    scopeMap = new HashMap<>();
+                    scopeMapsBySession.put(vaadinSession, scopeMap);
+                }
+
+                T result = (T)scopeMap.get(key);
+
+                if(result == null){
+                    result = provider.get();
+                    scopeMap.put(key, result);
+                }
+
+                return result;
             }
         };
     }

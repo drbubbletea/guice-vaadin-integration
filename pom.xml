@@ -28,7 +28,7 @@
         <project.build.source>1.8</project.build.source>
         <project.build.target>1.8</project.build.target>
         <reflections.version>0.9.11</reflections.version>
-        <vaadin.version>[10.0.0,)</vaadin.version>
+        <vaadin.version>[13.0.3,)</vaadin.version>
     </properties>
     <repositories>
         <repository>
