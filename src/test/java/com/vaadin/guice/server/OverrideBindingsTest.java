@@ -15,6 +15,7 @@
  */
 package com.vaadin.guice.server;
 
+import com.google.common.collect.ImmutableList;
 import com.google.inject.ConfigurationException;
 import com.vaadin.guice.annotation.PackagesToScan;
 import com.vaadin.guice.testClasses.*;
@@ -24,16 +25,19 @@ import org.mockito.Mockito;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import java.util.Collections;
 import java.util.Enumeration;
 
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.*;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 public class OverrideBindingsTest {
 
     @Test
-    public void dynamically_loaded_modules_should_override() throws ReflectiveOperationException, ServletException {
+    public void dynamically_loaded_modules_should_override() {
         GuiceVaadinServlet GuiceVaadinServlet = new Servlet1();
 
         AnInterface anInterface = GuiceVaadinServlet.getInjector().getInstance(AnInterface.class);
@@ -48,7 +52,7 @@ public class OverrideBindingsTest {
     }
 
     @Test
-    public void statically_loaded_modules_should_be_considered() throws ReflectiveOperationException {
+    public void statically_loaded_modules_should_be_considered() {
         GuiceVaadinServlet guiceVaadinServlet = new Servlet2();
 
         AnInterface anInterface = guiceVaadinServlet.getInjector().getInstance(AnInterface.class);
@@ -63,7 +67,7 @@ public class OverrideBindingsTest {
     }
 
     @Test
-    public void dynamically_loaded_modules_should_be_considered() throws ReflectiveOperationException {
+    public void dynamically_loaded_modules_should_be_considered() {
         GuiceVaadinServlet GuiceVaadinServlet = new Servlet3();
 
         AnInterface anInterface = GuiceVaadinServlet.getInjector().getInstance(AnInterface.class);
@@ -73,7 +77,7 @@ public class OverrideBindingsTest {
     }
 
     @Test(expected = ConfigurationException.class)
-    public void unbound_classes_should_not_be_available() throws ReflectiveOperationException {
+    public void unbound_classes_should_not_be_available() {
         GuiceVaadinServlet GuiceVaadinServlet = new Servlet3();
 
         GuiceVaadinServlet.getInjector().getInstance(AnotherInterface.class);
@@ -88,20 +92,12 @@ public class OverrideBindingsTest {
 
                 when(servletConfig.getServletContext()).thenReturn(servletContext);
 
-                final Enumeration<String> initParameters = new Enumeration<String>() {
-                    @Override
-                    public boolean hasMoreElements() {
-                        return false;
-                    }
-
-                    @Override
-                    public String nextElement() {
-                        return null;
-                    }
-                };
+                final Enumeration<String> initParameters = Collections.enumeration(ImmutableList.of("compatibilityMode"));
 
                 when(servletConfig.getInitParameterNames()).thenReturn(initParameters);
                 when(servletContext.getInitParameterNames()).thenReturn(initParameters);
+                when(servletConfig.getInitParameter(eq("compatibilityMode"))).thenReturn("true");
+                when(servletContext.getInitParameter(eq("compatibilityMode"))).thenReturn("true");
 
                 init(servletConfig);
             } catch (ServletException e) {
