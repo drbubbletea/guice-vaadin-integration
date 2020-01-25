@@ -44,39 +44,69 @@ configuring a GuiceVaadinServlet in the deployment-descriptor.
 </web-app>
 ```
 
-## setting up UI's
+## Scopes
 
-All packages in packagesToScan and their sub-packages are scanned for Vaadin-UI's. These UI's need to have a 
-GuiceUI-annotation. 
+Available scopes are UIScope and VaadinSessionScope, similar to what the Spring addon offers.
+UIScope is what MUST be the scope for all Vaadin-components, since they must belong to exactly one
+UI. VaadinSessionScope may be used to sync data between multiple tabs in the same browser.   
 
 ```java
-@com.vaadin.guice.annotation.GuiceUI
-public class MyUI extends com.vaadin.ui.UI {
+import com.vaadin.guice.annotation.UIScope;
+
+@UIScope
+public class MyButton extends Button {
 }
 ```
 
-In order to set up a Vaadin-Navigator, a 'viewContainer' is to be configured. A viewContainer is the second parameter
-to the Navigator's constructor. The Content of a UI can also be configured via the annotation
+## Guice-Module loading
+
+Since Guice is configured via so called Modules, we need a way to load these modules. All Modules
+in the packages contained by 'packagesToScan' will be instantiated and loaded by default. 
 
 ```java
-@UIScope
-public class MyViewContainer extends Panel {
-}
+package org.mycompany.ui;
 
-@UIScope
-public class Content extends VerticalLayout {
-   @Inject
-   Content(MyHeader header, MyViewContainer viewContainer){
-      addComponents(header, viewContainer);
-   }
-}
+import com.google.inject.AbstractModule;
 
-@GuiceUI(content = Content.class, viewContainer = MyViewContainer.class)
-public class MyUI extends com.vaadin.ui.UI {
-    public void init(com.vaadin.server.VaadinRequest request){
-         // can be left empty
+//will be loaded, since the 'org.mycompany.ui'-package is included in
+//the packagesToScan  
+public class MyModule extends AbstractModule{
+    protected void configure(){
+        //...    
     }
 }
+```
+
+The alternative way to load modules is via the @Import-Annotation. This was 
+introduced to make sort of an addon-development for guice-vaadin possible, similar
+to what Spring offers with it's own @Import-annotation.
+
+First, a new Annotation is needed that points to the module to be loaded via @Import:
+
+```java
+package org.mycompany.ui;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
+
+@Target(ElementType.Type)
+@Retention(RUNTIME)
+@Import(SomeModule.class)
+public @interface UseSomeModule {    
+}
+```
+
+Second, the annotation is pinned on the servlet and that's it.
+
+```java
+    package org.mypackage;
+
+    @UseSomeModule
+    @javax.servlet.annotation.WebServlet(name = "Guice-Vaadin-Servlet", urlPatterns = "/*")
+    @com.vaadin.guice.annotation.PackagesToScan({"org.mycompany.ui", "org.mycompany.moreui"})
+    public class MyServlet extends com.vaadin.guice.server.GuiceVaadinServlet{
+    }
 ```
 
 Copyright 2015-2017 Vaadin Ltd.
