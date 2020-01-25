@@ -50,6 +50,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -233,11 +234,10 @@ public class GuiceVaadinServlet extends VaadinServlet {
         return vaadinSessionScope;
     }
 
-    Iterator<VaadinServiceInitListener> getServiceInitListeners() {
+    Stream<VaadinServiceInitListener> getServiceInitListeners() {
         return vaadinServiceInitListenerClasses
                 .stream()
-                .map(key -> (VaadinServiceInitListener) getInjector().getInstance(key))
-                .iterator();
+                .map(key -> getInjector().getInstance(key));
     }
 
     Optional<Class<? extends I18NProvider>> getI18NProvider(){

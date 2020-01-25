@@ -30,7 +30,6 @@ class VaadinModule extends AbstractModule {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     protected void configure() {
         guiceVaadinServlet.getI18NProvider().ifPresent( i18NProvider -> bind(I18NProvider.class).to(i18NProvider));
 
