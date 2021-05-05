@@ -45,7 +45,7 @@ configuring a GuiceVaadinServlet in the deployment-descriptor.
 </web-app>
 ```
 
-## setting up UI's
+## setting up UIs
 
 All packages in packagesToScan and their sub-packages are scanned for Vaadin-UI's. These UI's need to have a 
 GuiceUI-annotation. 
