@@ -19,10 +19,10 @@ import com.google.inject.*;
 import com.vaadin.flow.component.html.*;
 import com.vaadin.flow.di.*;
 import com.vaadin.flow.server.*;
+import jakarta.servlet.*;
 import org.junit.*;
 import org.mockito.*;
 
-import javax.servlet.*;
 import java.util.*;
 import java.util.stream.*;
 

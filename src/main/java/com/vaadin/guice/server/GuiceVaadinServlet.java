@@ -38,6 +38,8 @@ import com.vaadin.guice.annotation.Import;
 import com.vaadin.guice.annotation.OverrideBindings;
 import com.vaadin.guice.annotation.PackagesToScan;
 
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletException;
 import org.reflections.Reflections;
 
 import java.lang.annotation.Annotation;
@@ -51,9 +53,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
-
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;

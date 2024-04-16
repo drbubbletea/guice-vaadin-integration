@@ -19,12 +19,12 @@ import com.google.common.collect.ImmutableList;
 import com.google.inject.ConfigurationException;
 import com.vaadin.guice.annotation.PackagesToScan;
 import com.vaadin.guice.testClasses.*;
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
 import java.util.Collections;
 import java.util.Enumeration;
 
